@@ -63,7 +63,7 @@ class Backend():
             print('cool enough - turn off fan')
             self.switch_off(3)
         with open("temperature.csv", "a") as temp_log_file:
-            temp_log_file.write("%s,%s\n" % (datetime.date().strftime("%c"), value))
+            temp_log_file.write("%s,%s\n" % (datetime.today().strftime("%c"), value))
 
     def switch_on(self, name):
         print("Activating switch %s" % name)
