@@ -4,6 +4,7 @@
 import logging
 from louie import dispatcher
 import sys
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('openzwave')
@@ -51,6 +52,18 @@ class Backend():
     def _value_update(self, network, node, value):
         print('value update: %s is %s.' % (value.label, value.data))
         self.values[value.label] = value.data
+        if value.label == 'Temperature':
+            self.process_temp_change(value.data)
+
+    def process_temp_change(self, value):
+        if value > 25:
+            print('too hot - turn on fan')
+            self.switch_on(3)
+        else:
+            print('cool enough - turn off fan')
+            self.switch_off(3)
+        with open("temperature.csv", "a") as temp_log_file:
+            temp_log_file.write("%s,%s\n" % (datetime.date().strftime("%c"), value))
 
     def switch_on(self, name):
         print("Activating switch %s" % name)
