@@ -23,13 +23,22 @@ def values(value):
     except KeyError:
         return "Value %s not found" % value
 
-@app.route('/switch/<node>/<on_or_off>')
-def switch(node, on_or_off):
-    if on_or_off == 'on':
+@app.route('/switch/<node>/<on_off_check>')
+def switch(node, on_off_check):
+    if on_off_check == 'on':
         backend.switch_on(node)
-    else:
+        return "switch %s switched on" % node
+    elif on_off_check == 'off':
         backend.switch_off(node)
-    return "switch %s switched %s" % (node, on_or_off)
+        return "switch %s switched on" % node
+    elif on_off_check == 'check':
+        val = backend.get_switch_status(node)
+        if val:
+            return "switch %s is currently on" % node
+        else:
+            return "switch %s is currently off" % node
+    else:
+        return "unrecognised command - choose on/off/check"
 
 if __name__ == '__main__':
     try:

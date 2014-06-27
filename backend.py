@@ -56,14 +56,14 @@ class Backend():
             self.process_temp_change(value.data)
 
     def process_temp_change(self, value):
-        if value > 25:
+        if value > 25 and not self.get_switch_status(3):
             print('too hot - turn on fan')
             self.switch_on(3)
-        else:
+        elif value < 25 and self.get_switch_status(3):
             print('cool enough - turn off fan')
             self.switch_off(3)
         with open("temperature.csv", "a") as temp_log_file:
-            temp_log_file.write("%s,%s\n" % (datetime.date().strftime("%c"), value))
+            temp_log_file.write("%s,%s\n" % (datetime.today().strftime("%c"), value))
 
     def switch_on(self, name):
         print("Activating switch %s" % name)
@@ -88,6 +88,20 @@ class Backend():
             if node.name == name or node.node_id == parsed_id:
                 for val in node.get_switches():
                     node.set_switch(val, False)
+
+    def get_switch_status(self, name):
+        print("Querying switch %s" % name)
+        parsed_id = 0
+        try:
+            parsed_id = int(name)
+        except ValueError:
+            pass
+        for key, node in self.network.nodes.iteritems():
+            if node.name == name or node.node_id == parsed_id:
+                for val in node.get_switches():
+                    state = node.get_switch_state(val)
+        return state
+
 
     def start(self):
         global started
