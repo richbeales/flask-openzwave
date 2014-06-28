@@ -12,9 +12,13 @@ logger = logging.getLogger('openzwave')
 from openzwave.network import ZWaveNetwork
 from openzwave.option import ZWaveOption
 import time
+from threading import Timer
 
 started = False
-
+TEMPERATURE_VALUE = 72057594076479506
+LUX_VALUE = 72057594076479538
+HUMIDITY_VALUE = 72057594076479570
+IR_SENSOR_VALUE = 72057594076463104
 
 class Backend():
 
@@ -44,10 +48,15 @@ class Backend():
         print("network : ready : %d nodes were found." % network.nodes_count)
         print("network : controller is : %s" % network.controller)
         dispatcher.connect(self._node_update, ZWaveNetwork.SIGNAL_NODE)
+        dispatcher.connect(self._node_event, ZWaveNetwork.SIGNAL_NODE_EVENT)
         dispatcher.connect(self._value_update, ZWaveNetwork.SIGNAL_VALUE)
 
     def _node_update(self, network, node):
         print('node update: %s.' % node)
+
+    def _node_event(self, network, node, signal, sender):
+        print('node event %s from node %s.' % (signal, node.node_id))
+        print('value is now %s' % self.network.get_value(IR_SENSOR_VALUE).data)
 
     def _value_update(self, network, node, value):
         print('value update: %s is %s.' % (value.label, value.data))
@@ -62,8 +71,20 @@ class Backend():
         elif value < 25 and self.get_switch_status(3):
             print('cool enough - turn off fan')
             self.switch_off(3)
+        self.log_temperature_with_value(value)
+
+    def log_temperature(self):
+        self.log_temperature_with_value(self.get_temperature())
+
+    def log_temperature_with_value(self, value):
+        print("logging temperature of %s to file" % value)
         with open("temperature.csv", "a") as temp_log_file:
             temp_log_file.write("%s,%s\n" % (datetime.today().strftime("%c"), value))
+        self.start_timer()
+
+    def start_timer(self):
+        t = Timer(600, self.log_temperature)
+        t.start()
 
     def switch_on(self, name):
         print("Activating switch %s" % name)
@@ -102,6 +123,14 @@ class Backend():
                     state = node.get_switch_state(val)
         return state
 
+    def get_temperature(self):
+        return self.network.nodes[2].get_sensor_value(TEMPERATURE_VALUE)
+
+    def get_humidity(self):
+        return self.network.nodes[2].get_sensor_value(HUMIDITY_VALUE)
+
+    def get_brightness(self):
+        return self.network.nodes[2].get_sensor_value(LUX_VALUE)
 
     def start(self):
         global started
@@ -109,7 +138,7 @@ class Backend():
             return
         started = True
         self.network.start()
-
+        self.start_timer()
         print "Starting..."
         for i in range(0, 90):
             if self.network.state >= self.network.STATE_READY:

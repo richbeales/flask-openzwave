@@ -23,6 +23,10 @@ def values(value):
     except KeyError:
         return "Value %s not found" % value
 
+@app.route('/temperature')
+def temperature():
+    return backend.get_temperature()
+
 @app.route('/switch/<node>/<on_off_check>')
 def switch(node, on_off_check):
     if on_off_check == 'on':
