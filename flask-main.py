@@ -5,16 +5,19 @@ import os
 file_path = os.path.dirname(__file__)
 sys.path.insert(0, file_path)
 
-from flask import Flask
+from flask import Flask, render_template
 from backend import Backend
+#from fake_backend import Backend
 
 app = Flask(__name__)
+
 backend = Backend()
-backend.start()
+
 
 @app.route('/')
 def index():
-    return 'Welcome to Flask OpenWave!'
+    return render_template("index.html")
+
 
 @app.route('/values/<value>')
 def values(value):
@@ -23,9 +26,11 @@ def values(value):
     except KeyError:
         return "Value %s not found" % value
 
+
 @app.route('/temperature')
 def temperature():
     return backend.get_temperature()
+
 
 @app.route('/switch/<node>/<on_off_check>')
 def switch(node, on_off_check):
@@ -46,6 +51,7 @@ def switch(node, on_off_check):
 
 if __name__ == '__main__':
     try:
+        backend.start()
         app.run(host='0.0.0.0', debug=True, use_reloader=False)
     except KeyboardInterrupt:
         backend.stop()
