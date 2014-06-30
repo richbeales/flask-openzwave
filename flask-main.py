@@ -31,6 +31,9 @@ def values(value):
 def temperature():
     return backend.get_temperature()
 
+@app.route('/json/values')
+def json_values():
+    return "%s" % backend.get_sensor_json()
 
 @app.route('/switch/<node>/<on_off_check>')
 def switch(node, on_off_check):

@@ -3,9 +3,43 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>Flask OpenZWave</title>
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
+    <script type="text/javascript">
+        $(function() {
+
+            var options = {
+                lines: {
+                    show: true
+                },
+                points: {
+                    show: true
+                },
+                xaxis: {
+                    tickDecimals: 0,
+                    tickSize: 1
+                }
+            };
+
+            var data = [];
+
+            function onDataReceived(series) {
+                data.push(series);
+                $.plot("#placeholder", data, options);
+            }
+
+            $.ajax({
+                url: '/json/values',
+                type: "GET",
+                dataType: "json",
+                success: onDataReceived
+            });
+        });
+    </script>
 </head>
 <body>
 <h1>Welcome to flask-openzwave</h1>
+<div id="placeholder" style="height:300px; width: 500px;"></div>
 <h2>Available operations:</h2>
 <ul>
     <li><a href="/values/Temperature">Get latest Temperature value</a></li>

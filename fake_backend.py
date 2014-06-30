@@ -17,6 +17,13 @@ class Backend():
         print("Querying switch %s" % name)
         return True
 
+    def get_sensor_json(self):
+        lines = open("/home/rich/code/flask-openzwave/sensors.csv", "r").readlines()
+        json = []
+        for line in lines:
+            json.append('{"Date":"%s","Temperature":"%s","Humidity":"%s","Lux":"%s"}' % tuple(line.split(',')))
+        return json
+
     def get_temperature(self):
         return 22
 

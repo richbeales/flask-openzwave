@@ -87,6 +87,13 @@ class Backend():
         with open("sensors.csv", "a") as sensor_log_file:
             sensor_log_file.write("%s,%s,%s,%s\n" % (datetime.today().strftime("%d/%m/%Y %H:%M:%S"), t, h, l))
 
+    def get_sensor_json(self):
+        lines = open("sensors.csv", "r").readlines()
+        json = []
+        for line in lines:
+            json.append('{"Date":"%s","Temperature":"%s","Humidity":"%s","Lux":"%s"}' % tuple(line.split(',')))
+        return json
+
     def switch_on(self, name):
         print("Activating switch %s" % name)
         parsed_id = 0
