@@ -5,7 +5,7 @@ import os
 file_path = os.path.dirname(__file__)
 sys.path.insert(0, file_path)
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from backend import Backend
 #from fake_backend import Backend
 
@@ -33,7 +33,7 @@ def temperature():
 
 @app.route('/json/values')
 def json_values():
-    return "%s" % backend.get_sensor_json()
+    return jsonify(**{'values':backend.get_sensor_values()})
 
 @app.route('/switch/<node>/<on_off_check>')
 def switch(node, on_off_check):

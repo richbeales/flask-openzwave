@@ -81,18 +81,25 @@ class Backend():
 
     def log_values(self):
         print('Writing sensor log')
-        t = self.get_temperature()
-        h = self.get_humidity()
-        l = self.get_brightness()
-        with open("sensors.csv", "a") as sensor_log_file:
-            sensor_log_file.write("%s,%s,%s,%s\n" % (datetime.today().strftime("%d/%m/%Y %H:%M:%S"), t, h, l))
+        try:
+            t = self.get_temperature()
+            h = self.get_humidity()
+            l = self.get_brightness()
+            with open("sensors.csv", "a") as sensor_log_file:
+                sensor_log_file.write("%s,%s,%s,%s\n" % (datetime.today().strftime("%d/%m/%Y %H:%M:%S"), t, h, l))
+        except:
+            print('Failed to log values')
+        self.start_timer()
 
-    def get_sensor_json(self):
+    def get_sensor_values(self):
         lines = open("sensors.csv", "r").readlines()
-        json = []
+        return_list = []
         for line in lines:
-            json.append('{"Date":"%s","Temperature":"%s","Humidity":"%s","Lux":"%s"}' % tuple(line.split(',')))
-        return json
+            line = line[:-1]  # remove newline
+            d = {'Date': line.split(',')[0], 'Temperature': line.split(',')[1], 'Humidity': line.split(',')[2],
+                         'Lux': line.split(',')[3]}
+            return_list.append(d)
+        return return_list
 
     def switch_on(self, name):
         print("Activating switch %s" % name)
@@ -141,7 +148,7 @@ class Backend():
         return self.network.nodes[2].get_sensor_value(LUX_VALUE)
 
     def start_timer(self):
-        t = Timer(900, self.log_values())
+        t = Timer(900, self.log_values)
         t.start()
 
     def start(self):
