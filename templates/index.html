@@ -5,6 +5,7 @@
     <title>Flask OpenZWave</title>
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.time.min.js"></script>
     <script type="text/javascript">
         $(function() {
 
@@ -16,16 +17,29 @@
                     show: true
                 },
                 xaxis: {
-                    tickDecimals: 0,
-                    tickSize: 1
+                    mode: "time"
                 }
             };
 
-            var data = [];
-
             function onDataReceived(series) {
-                data.push(series);
-                $.plot("#placeholder", data, options);
+                series = series['values'];
+                var temps = [];
+                var hums = [];
+                var luxs = [];
+                series.forEach(function(entry) {
+                    var d = entry['Date'].substr(0,2);
+                    var mt = entry['Date'].substr(3,2);
+                    var yr = entry['Date'].substr(6,4);
+                    var h = entry['Date'].substr(11,2);
+                    var m = entry['Date'].substr(14,2);
+                    var s = entry['Date'].substr(17,2);
+                    temps.push([new Date(yr,mt,d,h,m,s).getTime(), entry['Temperature']]);
+                    hums.push([new Date(yr,mt,d,h,m,s).getTime(), entry['Humidity']]);
+                    luxs.push([new Date(yr,mt,d,h,m,s).getTime(), entry['Lux']]);
+                });
+                $.plot("#tempplot", [temps], options);
+                $.plot("#humplot", [hums], options);
+                $.plot("#luxplot", [luxs], options);
             }
 
             $.ajax({
@@ -39,7 +53,13 @@
 </head>
 <body>
 <h1>Welcome to flask-openzwave</h1>
-<div id="placeholder" style="height:300px; width: 500px;"></div>
+<p>Temperature sensor graph:</p>
+<div id="tempplot" style="height:300px; width: 500px;"></div>
+<p>Humidity sensor graph:</p>
+<div id="humplot" style="height:300px; width: 500px;"></div>
+<p>Lux sensor graph:</p>
+<div id="luxplot" style="height:300px; width: 500px;"></div>
+
 <h2>Available operations:</h2>
 <ul>
     <li><a href="/values/Temperature">Get latest Temperature value</a></li>
